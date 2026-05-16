@@ -1,4 +1,6 @@
-﻿using BookingSystem.Api.DataTransferObjects;
+﻿using AutoMapper;
+using BookingSystem.Api.DataTransferObjects;
+using BookingSystem.Api.Models;
 using BookingSystem.Api.Services;
 using Microsoft.AspNetCore.Mvc;
 
@@ -9,31 +11,40 @@ namespace BookingSystem.Api.Controllers;
 public class BookingsController : ControllerBase
 {
     private readonly BookingService _service;
+    private readonly IMapper _mapper;
 
-    public BookingsController(BookingService service)
+    public BookingsController(
+        BookingService service,
+        IMapper mapper)
     {
         _service = service;
+        _mapper = mapper;
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetAll()
+    public async Task<ActionResult<IEnumerable<BookingResponse>>> GetAll()
     {
-        return Ok(await _service.GetAllAsync());
+        var bookings = await _service.GetAllAsync();
+
+        return Ok(_mapper.Map<IEnumerable<BookingResponse>>(bookings));
     }
 
     [HttpGet("date/{date}")]
-    public async Task<IActionResult> GetByDate(DateTime date)
+    public async Task<ActionResult<IEnumerable<BookingResponse>>> GetByDate(DateTime date)
     {
-        return Ok(await _service.GetByDateAsync(date));
+        var bookings = await _service.GetByDateAsync(date);
+
+        return Ok(_mapper.Map<IEnumerable<BookingResponse>>(bookings));
     }
 
     [HttpPost]
-    public async Task<IActionResult> Create(
-        CreateBookingRequest request)
+    public async Task<ActionResult<BookingResponse>> Create(CreateBookingRequest request)
     {
-        var booking = await _service.CreateAsync(request);
+        var booking = _mapper.Map<Booking>(request);
 
-        return Ok(booking);
+        var createdBooking = await _service.CreateAsync(booking);
+
+        return Ok(_mapper.Map<BookingResponse>(createdBooking));
     }
 
     [HttpPut("{id}/accept")]
@@ -48,6 +59,14 @@ public class BookingsController : ControllerBase
     public async Task<IActionResult> Decline(Guid id)
     {
         await _service.DeclineAsync(id);
+
+        return NoContent();
+    }
+
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> Delete(Guid id)
+    {
+        await _service.DeleteAsync(id);
 
         return NoContent();
     }
