@@ -1,8 +1,10 @@
 apiVersion: apps/v1
 kind: Deployment
-
 metadata:
   name: bookingsystem-api
+  labels:
+    app: bookingsystem-api
+    version: v1
 
 spec:
   replicas: 2
@@ -15,15 +17,33 @@ spec:
     metadata:
       labels:
         app: bookingsystem-api
+        version: v1
 
     spec:
       containers:
-      - name: bookingsystem-api
-        image: bookingsystemacr2026.azurecr.io/bookingsystemapi:v1
+        - name: bookingsystem-api
+          image: bookingsystemacr2026.azurecr.io/bookingsystemapi:v1
+          imagePullPolicy: Always
 
-        ports:
-        - containerPort: 8080
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
 
-        env:
-        - name: ASPNETCORE_ENVIRONMENT
-          value: "Production"
+          env:
+            - name: ASPNETCORE_ENVIRONMENT
+              value: "Production"
+
+            - name: ConnectionStrings__DefaultConnection
+              valueFrom:
+                secretKeyRef:
+                  name: sqlserver-secret
+                  key: CONNECTION_STRING
+
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"

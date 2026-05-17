@@ -41,7 +41,12 @@ app.UseSerilogRequestLogging();
 
 
 app.UseSwagger();
-app.UseSwaggerUI();
+
+app.UseSwaggerUI(options =>
+{
+    options.SwaggerEndpoint("/swagger/v1/swagger.json", "BookingSystem API v1");
+    options.RoutePrefix = "swagger";
+});
 
 
 app.UseHttpsRedirection();
@@ -49,5 +54,11 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 
 app.MapControllers();
+
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDBContext>();
+    dbContext.Database.Migrate();
+}
 
 app.Run();
