@@ -11,3 +11,5 @@ obj/
 *.cache
 *.log
 Logs/
+
+k8s/sqlserver-secret.yaml
