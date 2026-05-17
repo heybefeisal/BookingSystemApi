@@ -1,0 +1,85 @@
+name: Build and Deploy to AKS
+
+on:
+  push:
+    branches: [ main ]
+
+  pull_request:
+    branches: [ main ]
+
+env:
+  IMAGE_NAME: bookingsystemapi
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore dependencies
+        run: dotnet restore BookingSystemApi/BookingSystem.Api.csproj
+
+      - name: Build application
+        run: dotnet build BookingSystemApi/BookingSystem.Api.csproj --configuration Release --no-restore
+
+      - name: Run tests
+        run: dotnet test BookingSystem.Api.Tests/BookingSystem.Api.Tests.csproj --no-build --verbosity normal
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Setup Azure CLI
+        uses: azure/cli@v2
+        with:
+          inlineScript: echo "Azure CLI setup complete"
+
+      - name: Build and Push Docker image to ACR
+        run: |
+          IMAGE_TAG=${{ secrets.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ github.sha }}
+
+          az acr build \
+            --registry ${{ secrets.ACR_NAME }} \
+            --image ${{ env.IMAGE_NAME }}:${{ github.sha }} \
+            --file BookingSystemApi/Dockerfile \
+            .
+
+          echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
+
+      - name: Deploy to AKS
+        if: github.ref == 'refs/heads/main'
+        run: |
+
+          echo "Getting AKS credentials..."
+
+          az aks get-credentials \
+            --resource-group ${{ secrets.RESOURCE_GROUP }} \
+            --name ${{ secrets.CLUSTER_NAME }} \
+            --overwrite-existing
+
+          echo "Testing kubectl connection..."
+
+          kubectl cluster-info
+
+          echo "Updating deployment..."
+
+          kubectl set image deployment/bookingsystem-api \
+            bookingsystem-api=${{ env.IMAGE_TAG }}
+
+          echo "Waiting for rollout..."
+
+          kubectl rollout status deployment/bookingsystem-api --timeout=600s
+
+          echo "Deployment complete"
+
+          kubectl get pods
+          kubectl get services
