@@ -90,6 +90,14 @@ docker run -d -p 8080:8080 bookingsystemapi:local
 
 # Kubernetes Deployment
 
+The application is deployed to Azure Kubernetes Service (AKS) using:
+
+- Deployment manifests
+- Services
+- Persistent Volumes
+- Kubernetes Secrets
+- SQL Server running inside Kubernetes
+
 Kubernetes manifests are located in:
 
 ```text
@@ -162,6 +170,23 @@ SQL Server
 ```
 
 ---
+
+# Secrets Management
+
+Sensitive values such as database passwords and connection strings are managed using:
+
+- Kubernetes Secrets
+- GitHub Secrets
+
+Secrets are not committed to source control.
+
+Example:
+
+`bash
+kubectl create secret generic sqlserver-secret ^
+  --from-literal=SA_PASSWORD="YOUR_PASSWORD" ^
+  --from-literal=CONNECTION_STRING="YOUR_CONNECTION_STRING"
+
 
 # Future Improvements
 
