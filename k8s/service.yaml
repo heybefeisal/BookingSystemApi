@@ -4,7 +4,7 @@ kind: Service
 metadata:
   name: bookingsystem-api-service
 
-spec:
+spec:   
   type: LoadBalancer
 
   selector:
