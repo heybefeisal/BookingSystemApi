@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: bookingsystem-api
+
+spec:
+  replicas: 2
+
+  selector:
+    matchLabels:
+      app: bookingsystem-api
+
+  template:
+    metadata:
+      labels:
+        app: bookingsystem-api
+
+    spec:
+      containers:
+      - name: bookingsystem-api
+        image: bookingsystemacr2026.azurecr.io/bookingsystemapi:v1
+
+        ports:
+        - containerPort: 8080
+
+        env:
+        - name: ASPNETCORE_ENVIRONMENT
+          value: "Production"

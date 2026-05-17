@@ -1,31 +1,18 @@
-# Build outputs
+.vs/
+**/.vs/
+.vscode/
+
 bin/
 obj/
-out/
+**/bin/
+**/obj/
 
-# IDE files
-.vs/
-.vscode/
-*.user
-*.suo
-
-# OS files
-.DS_Store
-Thumbs.db
-
-# Git
 .git/
 .gitignore
 
-# Documentation
+*.user
+*.suo
+*.log
+
 README.md
 *.md
-
-# Docker
-Dockerfile*
-.dockerignore
-
-# Logs
-*.log
-logs/
-Logs/

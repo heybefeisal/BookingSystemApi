@@ -1,5 +1,13 @@
-﻿################################################################################
-# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
-################################################################################
+﻿.vs/
+**/.vs/
 
-/BookingSystemApi/.vs/BookingSystemApi/FileContentIndex
+bin/
+obj/
+**/bin/
+**/obj/
+
+*.user
+*.suo
+*.cache
+*.log
+Logs/
